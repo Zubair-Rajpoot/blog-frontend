@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
@@ -12,8 +12,23 @@ const navigation = [
   { name: "Contact", href: "#" },
 ];
 
-export default function Home() {
+export default function Id({ params }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [blogData, setBlogData] = useState({});
+  useEffect(() => {
+    async function findBlog() {
+      const response = await fetch(`http://localhost:4000/api/blog/find`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: params.id }),
+      });
+      const data = await response.json();
+      setBlogData(data);
+    }
+    findBlog();
+  }, []);
 
   return (
     <div className="bg-white min-h-screen overflow-hidden">
@@ -120,31 +135,27 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              The Best Blogging Website
+        {/*  */}
+        <div className="w-full flex flex-col">
+          <div className="mx-auto flex flex-col justify-center items-center py-12 sm:py-12 lg:py-16">
+            <h1 className="text-3xl text-gray-700 underline underline-offset-8 p-4 font-semibold">
+              {blogData.title}
             </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Explore any topic through engaging articles! Get insights, tips,
-              and discussions. We update frequently, offering fresh perspectives
-              to inform and inspire you.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="#"
-                className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Get started
-              </a>
-              <a
-                href="#"
-                className="text-sm font-semibold leading-6 text-gray-900"
-              >
-                Learn more <span aria-hidden="true">→</span>
-              </a>
-            </div>
           </div>
+          <h2 className="text-2xl font-semibold max-md:text-lg text-gray-700 underline">
+            Description
+          </h2>
+          <p className="pt-10 text-lg text-gray-700 px-[5%]">
+            {" "}
+            {blogData.description}
+          </p>
+          <h2 className="pt-10 text-2xl font-semibold max-md:text-lg text-gray-700 underline">
+            Content
+          </h2>
+          <p className="py-10 text-lg text-gray-700 px-[5%]">
+            {" "}
+            {blogData.content}
+          </p>
         </div>
         <div
           className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"

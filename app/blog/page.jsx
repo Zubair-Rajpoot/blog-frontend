@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
@@ -12,9 +12,18 @@ const navigation = [
   { name: "Contact", href: "#" },
 ];
 
-export default function Home() {
+export default function Blog() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [blogsData, setBlogsData] = useState([]);
 
+  useEffect(() => {
+    async function fetchData() {
+      const response = await fetch(`http://localhost:4000/api/blog`);
+      const data = await response.json();
+      setBlogsData(data);
+    }
+    fetchData();
+  }, []);
   return (
     <div className="bg-white min-h-screen overflow-hidden">
       <header className="absolute inset-x-0 top-0 z-50">
@@ -120,30 +129,34 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              The Best Blogging Website
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Explore any topic through engaging articles! Get insights, tips,
-              and discussions. We update frequently, offering fresh perspectives
-              to inform and inspire you.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="#"
-                className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Get started
-              </a>
-              <a
-                href="#"
-                className="text-sm font-semibold leading-6 text-gray-900"
-              >
-                Learn more <span aria-hidden="true">→</span>
-              </a>
-            </div>
+        <div className="mx-auto flex flex-col justify-center items-center py-12 sm:py-12 lg:py-16">
+          <h1 className="text-3xl text-gray-700 underline underline-offset-8 p-4 font-semibold">
+            BLOGS
+          </h1>
+          <div
+            className={`grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 rounded-lg`}
+          >
+            {blogsData.map((b, index) => {
+              return (
+                <Link href={`/blog/${b._id}`}>
+                  <div
+                    key={index}
+                    className="grid grid-col-1 shadow-lg cursor-pointer rounded-lg p-4 text-gray-600 bg-white/40 gap-2 space-x-4"
+                  >
+                    <img
+                      src={`http://localhost:4000/${b.file}`}
+                      width={600}
+                      height={300}
+                      alt={`img${index}`}
+                    />
+                    <div className="flex flex-col space-y-4 py-2">
+                      <h1 className="text-2xl">{b.title}</h1>
+                      <p>{b.description}</p>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
         <div

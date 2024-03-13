@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import FormData from "form-data";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -12,11 +15,64 @@ const navigation = [
   { name: "Contact", href: "#" },
 ];
 
-export default function Home() {
+export default function Write() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    file: null,
+    description: "",
+    content: "",
+  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const data1 = createFormData(formData);
+      const response = await fetch(`http://localhost:4000/api/blog`, {
+        method: "POST",
+        body: data1,
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        data?.message
+          ? toast(data.message, { type: "warning" })
+          : toast("something went wrong", { type: "error" });
+        throw new Error("something went wrong");
+      }
+      const data = await response.json();
+      toast("Blog Published Successfully");
+      setFormData({
+        title: "",
+        file: null,
+        description: "",
+        content: "",
+      });
+    } catch (err) {
+      console.log(err);
+      toast(err, { type: "error" });
+    }
+  };
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "file" ? files[0] : value,
+    }));
+  };
+
+  const createFormData = (data) => {
+    const formData2 = new FormData();
+    formData2.append("title", data.title);
+    formData2.append("description", data.description);
+    formData2.append("content", data.content);
+    if (data.file) {
+      formData2.append("file", data.file);
+    }
+    return formData2;
+  };
 
   return (
     <div className="bg-white min-h-screen overflow-hidden">
+      <ToastContainer />
       <header className="absolute inset-x-0 top-0 z-50">
         <nav
           className="flex items-center justify-between p-6 lg:px-8"
@@ -120,31 +176,80 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              The Best Blogging Website
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Explore any topic through engaging articles! Get insights, tips,
-              and discussions. We update frequently, offering fresh perspectives
-              to inform and inspire you.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="#"
-                className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Get started
-              </a>
-              <a
-                href="#"
-                className="text-sm font-semibold leading-6 text-gray-900"
-              >
-                Learn more <span aria-hidden="true">→</span>
-              </a>
+        <div className="mx-auto flex flex-col justify-center items-center py-12 sm:py-12 lg:py-16 min-w-full">
+          <h1 className="text-3xl text-gray-700 underline underline-offset-8 p-4 font-semibold">
+            WRITE BLOG
+          </h1>
+          <form
+            className="w-full"
+            encType="multipart/form-data"
+            onSubmit={handleSubmit}
+          >
+            <div className="flex flex-col space-y-1 lg:px-[30%] md:px-[20%] sm:px-10 text-gray-700 justify-center items-center w-full">
+              <div className="p-3 flex flex-col w-full">
+                <label htmlFor="" className="font-semibold">
+                  Title
+                </label>
+                <br />
+                <input
+                  onChange={handleChange}
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  className="p-2 shadow-lg"
+                />
+              </div>
+              <div className="p-3 flex flex-col w-full">
+                <label htmlFor="" className="font-semibold">
+                  Image
+                </label>
+                <br />
+                <input
+                  onChange={handleChange}
+                  type="file"
+                  name="file"
+                  id="file"
+                  className="p-2"
+                />
+              </div>
+              <div className="p-3 flex flex-col w-full">
+                <label htmlFor="" className="font-semibold">
+                  Description
+                </label>
+                <br />
+                <input
+                  onChange={handleChange}
+                  type="text"
+                  name="description"
+                  value={formData.description}
+                  className="p-2 shadow-lg"
+                />
+              </div>
+              <div className="p-3 flex flex-col w-full">
+                <label htmlFor="" className="font-semibold">
+                  Content
+                </label>
+                <br />
+                <textarea
+                  onChange={handleChange}
+                  name="content"
+                  className="p-2 shadow-lg "
+                  id=""
+                  value={formData.content}
+                  cols="30"
+                  rows="7"
+                ></textarea>
+              </div>
+              <div className="p-3 flex flex-col w-full">
+                <button
+                  className="p-4 text-white leading-4 tracking-wide rounded-lg text-lg font-semibold bg-gradient-to-tr from-[#ff80b5] to-[#9089fc]"
+                  type="submit"
+                >
+                  Submit
+                </button>
+              </div>
             </div>
-          </div>
+          </form>
         </div>
         <div
           className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
